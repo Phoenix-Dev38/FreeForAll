@@ -1,0 +1,10 @@
+name: FreeForAll
+version: ${project.version}
+main: com.github.phoenix_dev38.ffa.FreeForAll
+commands:
+  freeforall:
+    aliases: [ ffa ]
+  stats:
+  cadmin:
+  coin:
+  eu:
