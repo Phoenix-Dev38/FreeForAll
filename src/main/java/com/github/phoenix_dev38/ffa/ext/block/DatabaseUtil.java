@@ -15,12 +15,12 @@ public class DatabaseUtil {
     public static boolean existPlayerBlock(UUID uuid) throws SQLException {
         ResultSet resultSet;
         try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_block WHERE UUID= '" + uuid + "';");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_block WHERE UUID= '" + uuid + "';");
             return resultSet.next();
         } catch (NullPointerException | SQLException e) {
             e.printStackTrace();
             FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_block WHERE UUID= '" + uuid + "';");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_block WHERE UUID= '" + uuid + "';");
             return resultSet.next();
         }
     }
@@ -29,7 +29,7 @@ public class DatabaseUtil {
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
             try {
                 if (!existPlayerBlock(uuid))
-                    FreeForAll.mysql.update("INSERT INTO ffa_block(uuid, block) VALUES('" + uuid + "', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_block(uuid, block) VALUES('" + uuid + "', '?');");
             } catch (SQLException throwable) {
                 throwable.printStackTrace();
             }
@@ -47,7 +47,7 @@ public class DatabaseUtil {
                 case EMERALD:
                 case OBSIDIAN:
                 default:
-                    FreeForAll.mysql.update("UPDATE ffa_block SET Block = '" + blockType.toString().toLowerCase() + "' WHERE uuid = '" + uuid + "';");
+                    FreeForAll.mysql.update("UPDATE ffa_player_block SET Block = '" + blockType.toString().toLowerCase() + "' WHERE uuid = '" + uuid + "';");
                     break;
             }
         });
@@ -56,7 +56,7 @@ public class DatabaseUtil {
     public static void givePlayerBlock(Player player) {
         UUID uuid = player.getUniqueId();
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
-            ResultSet resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_block WHERE uuid = '" + uuid + "';");
+            ResultSet resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_block WHERE uuid = '" + uuid + "';");
             String blockName = "?";
             try {
                 resultSet.next();

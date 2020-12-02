@@ -17,12 +17,12 @@ public class DatabaseUtil {
     public static boolean existPlayerInv(UUID uuid) throws SQLException {
         ResultSet resultSet;
         try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_inv WHERE uuid = '" + uuid + "';");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "';");
             return resultSet.next();
         } catch (NullPointerException | SQLException e) {
             e.printStackTrace();
             FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_inv WHERE uuid = '" + uuid + "';");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "';");
             return resultSet.next();
         }
     }
@@ -32,18 +32,18 @@ public class DatabaseUtil {
             try {
                 if (!existPlayerInv(uuid)) {
                     //キット追加したら忘れるな！
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '1', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '2', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '3', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '4', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '1', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '2', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '3', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '4', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '5', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '6', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '7', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '8', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '1', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '2', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '3', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'Normal', '4', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '1', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '2', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '3', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '4', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '5', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '6', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '7', '?', '?');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'ExtraUltimate', '8', '?', '?');");
                 }
             } catch (SQLException throwable) {
                 throwable.printStackTrace();
@@ -58,7 +58,7 @@ public class DatabaseUtil {
                 case NORMAL:
                 case EXTRAULTIMATE:
                     String str = kitType.toString().toLowerCase();
-                    resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
+                    resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
                     resultSet.next();
                     if (!resultSet.getString("inv").equals("?"))
                         return true;
@@ -69,7 +69,7 @@ public class DatabaseUtil {
                 case NORMAL:
                 case EXTRAULTIMATE:
                     String str = kitType.toString().toLowerCase();
-                    resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
+                    resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
                     if (!resultSet.getString("inv").equals("?"))
                         return true;
             }
@@ -83,7 +83,7 @@ public class DatabaseUtil {
                 case NORMAL:
                 case EXTRAULTIMATE:
                     String str = kitType.toString().toLowerCase();
-                    FreeForAll.mysql.update("UPDATE ffa_inv SET inv = '" + inv + "',armor = '" + armor + "' WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
+                    FreeForAll.mysql.update("UPDATE ffa_player_inv SET inv = '" + inv + "',armor = '" + armor + "' WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
                     break;
             }
         });
@@ -95,7 +95,7 @@ public class DatabaseUtil {
             case NORMAL:
             case EXTRAULTIMATE:
                 String str = kitType.toString().toLowerCase();
-                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
+                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
                 break;
         }
         String inv = "";

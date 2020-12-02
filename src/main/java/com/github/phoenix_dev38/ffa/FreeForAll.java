@@ -1,14 +1,22 @@
 package com.github.phoenix_dev38.ffa;
 
+import com.github.phoenix_dev38.ffa.commands.FreeForAllCommand;
+import com.github.phoenix_dev38.ffa.commands.StatsCommand;
+import com.github.phoenix_dev38.ffa.ext.block.listeners.BlockGUIListener;
+import com.github.phoenix_dev38.ffa.ext.block.listeners.BlockListener;
+import com.github.phoenix_dev38.ffa.ext.buyitem.BuyItemGUIListener;
 import com.github.phoenix_dev38.ffa.ext.coin.commands.CAdminCommand;
 import com.github.phoenix_dev38.ffa.ext.coin.commands.CoinCommand;
+import com.github.phoenix_dev38.ffa.ext.eu.GiveCommand;
 import com.github.phoenix_dev38.ffa.ext.eu.anduril.AndurilListener;
 import com.github.phoenix_dev38.ffa.ext.eu.artemisbow.ArtemisBowListener;
 import com.github.phoenix_dev38.ffa.ext.eu.axeofperun.AxeofPerunListener;
 import com.github.phoenix_dev38.ffa.ext.eu.cornucopia.CornucopiaListener;
 import com.github.phoenix_dev38.ffa.ext.eu.daredevil.DaredevilListener;
+import com.github.phoenix_dev38.ffa.ext.eu.deaths_scythe.DeathsScytheListener;
 import com.github.phoenix_dev38.ffa.ext.eu.excalibur.ExcaliburListener;
 import com.github.phoenix_dev38.ffa.ext.eu.exodus.ExodusListener;
+import com.github.phoenix_dev38.ffa.ext.is.KitSaveListener;
 import com.github.phoenix_dev38.ffa.ext.prestige.listeners.PrestigeGUIListener;
 import com.github.phoenix_dev38.ffa.ext.prestige.listeners.PrestigeListener;
 import com.github.phoenix_dev38.ffa.ext.prestige.listeners.RecipeCraftListener;
@@ -19,15 +27,8 @@ import com.github.phoenix_dev38.ffa.ext.sk.listeners.ItemListener;
 import com.github.phoenix_dev38.ffa.ext.sk.listeners.SelectKitGUIListener;
 import com.github.phoenix_dev38.ffa.listeners.GameListener;
 import com.github.phoenix_dev38.ffa.utils.ScoreUtil;
-import com.github.phoenix_dev38.ffa.commands.FreeForAllCommand;
-import com.github.phoenix_dev38.ffa.commands.StatsCommand;
-import com.github.phoenix_dev38.ffa.ext.block.listeners.BlockGUIListener;
-import com.github.phoenix_dev38.ffa.ext.block.listeners.BlockListener;
-import com.github.phoenix_dev38.ffa.ext.buyitem.BuyItemGUIListener;
-import com.github.phoenix_dev38.ffa.ext.eu.GiveCommand;
-import com.github.phoenix_dev38.ffa.ext.eu.deaths_scythe.DeathsScytheListener;
-import com.github.phoenix_dev38.ffa.ext.is.KitSaveListener;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -51,17 +52,17 @@ public class FreeForAll extends JavaPlugin {
         instance = this;
         ab = new ActionBar();
 
-        YamlFile.loadSettings();
-        YamlFile.loadLocations();
-        if (YamlFile.SettingsYaml.getString("MySQL") == null) {
-            YamlFile.SettingsYaml.set("MySQL.host", "");
-            YamlFile.SettingsYaml.set("MySQL.database", "");
-            YamlFile.SettingsYaml.set("MySQL.user", "");
-            YamlFile.SettingsYaml.set("MySQL.password", "");
-            YamlFile.saveSettings();
+        YamlFile.loadLocation();
+        YamlFile.loadSetting();
+        if (YamlFile.SETTINGYAML.getString("MySQL") == null) {
+            YamlFile.SETTINGYAML.set("MySQL.host", "");
+            YamlFile.SETTINGYAML.set("MySQL.database", "");
+            YamlFile.SETTINGYAML.set("MySQL.user", "");
+            YamlFile.SETTINGYAML.set("MySQL.password", "");
+            YamlFile.saveSetting();
         }
-        YamlFile.saveSettings();
-        YamlFile.saveLocations();
+        YamlFile.saveLocation();
+        YamlFile.saveSetting();
 
         connectMySQL();
 
@@ -70,16 +71,14 @@ public class FreeForAll extends JavaPlugin {
         registerRecipes();
 
         ScoreUtil.putScoreKills();
-        Ranking.updateRanking();
-        for (Map.Entry<UUID, Integer> uuid : FreeForAll.kills.entrySet())
-            System.out.println(uuid.getKey());
+        getServer().getScheduler().runTaskLater(this, Ranking::updateRanking, 100);
     }
 
     public void onDisable() {
         MySQL.close();
 
-        YamlFile.saveSettings();
-        YamlFile.saveLocations();
+        YamlFile.saveLocation();
+        YamlFile.saveSetting();
     }
 
     public static FreeForAll getInstance() {
@@ -131,16 +130,17 @@ public class FreeForAll extends JavaPlugin {
     }
 
     public static void connectMySQL() {
-        if (YamlFile.SettingsYaml.getString("MySQL.host") == null
-                || YamlFile.SettingsYaml.getString("MySQL.host").equalsIgnoreCase("")) {
-            System.out.println("データベースの接続に失敗しました。ファイルの中身を確認して再設定してください。");
+        if (YamlFile.SETTINGYAML.getString("MySQL.host") == null
+                || YamlFile.SETTINGYAML.getString("MySQL.host").equalsIgnoreCase("")) {
+            Bukkit.getLogger().info(ChatColor.RED + "データベースの接続に失敗しました。ファイルの中身を確認して再設定してください。");
             Bukkit.shutdown();
             return;
         }
-        mysql = new MySQL(YamlFile.SettingsYaml.getString("MySQL.host"), YamlFile.SettingsYaml.getString("MySQL.database"), YamlFile.SettingsYaml.getString("MySQL.user"), YamlFile.SettingsYaml.getString("MySQL.password"));
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_block(uuid varchar(64), block text)");
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_inv(uuid varchar(64), kit_type text, kit_num int, inv text, armor text)");
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_prestige(uuid varchar(64), goldenhead text, lightapple text)");
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_stats(uuid varchar(64), kills int, deaths int, coins int)");
+        mysql = new MySQL(YamlFile.SETTINGYAML.getString("MySQL.host"), YamlFile.SETTINGYAML.getString("MySQL.database"), YamlFile.SETTINGYAML.getString("MySQL.user"), YamlFile.SETTINGYAML.getString("MySQL.password"));
+        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_block(uuid varchar(64), block text)");
+        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_inv(uuid varchar(64), kit_type text, kit_num int, inv text, armor text)");
+        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_prestige(uuid varchar(64), goldenhead text, lightapple text)");
+        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_stats(uuid varchar(64), kills int, deaths int, coins int)");
+        Bukkit.getLogger().info(ChatColor.GREEN + "データベースの接続に成功しました。");
     }
 }

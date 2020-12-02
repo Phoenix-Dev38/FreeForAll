@@ -2,6 +2,7 @@ package com.github.phoenix_dev38.ffa.commands;
 
 import com.github.phoenix_dev38.ffa.FreeForAll;
 import com.github.phoenix_dev38.ffa.Ranking;
+import com.github.phoenix_dev38.ffa.YamlFile;
 import com.github.phoenix_dev38.ffa.utils.GameUtil;
 import com.github.phoenix_dev38.piapi.API;
 import org.bukkit.Material;
@@ -36,6 +37,10 @@ public class FreeForAllCommand implements CommandExecutor {
                     this.uuid = player.getUniqueId();
                     if (args[0].equalsIgnoreCase("help")) {
                         sendPlayerOfCommandDescription(player);
+                    } else if (args[0].equalsIgnoreCase("reload")) {
+                        YamlFile.loadLocation();
+                        YamlFile.loadSetting();
+                        player.sendMessage(FreeForAll.PREFIX + "§aFreeForAll内のファイルを再読み込みしました。");
                     } else if (args[0].equalsIgnoreCase("join")) {
                         if (!FreeForAll.inGame.contains(uuid)) {
                             FreeForAll.inGame.add(this.uuid);
@@ -88,10 +93,12 @@ public class FreeForAllCommand implements CommandExecutor {
     private void sendPlayerOfCommandDescription(Player player) {
         player.sendMessage("§c--- §a§lFreeForAll §bCommand List §c---");
         player.sendMessage("§b/ffa help §a<当プラグインのコマンドリストを表示します。>");
+        player.sendMessage("§b/ffa reload §a<FreeForAll内のファイルを再読み込みします。>");
         player.sendMessage("§b/ffa join §a<FreeForAllに参加します。>");
         player.sendMessage("§b/ffa leave §a<FreeForAllから抜けます。>");
         player.sendMessage("§b/ffa dt §a<死んだときのアイテムを配布します。>");
-        player.sendMessage("§b/ffa set ms §a<メインスポーン地点を設定します。>");
+        player.sendMessage("§b/ffa tp ps §a<FreeForAllのStageにテレポートします。>");
+        player.sendMessage("§b/ffa rt <Number> §a<<Number>で指定したランキングを表示します。>");
         player.sendMessage("§b/ffa set ps <LocationType> §a<FreeForAllのプレイヤーのテレポート地点<LocationType>を設定します。>");
     }
 }

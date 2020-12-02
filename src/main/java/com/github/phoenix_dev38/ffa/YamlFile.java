@@ -8,77 +8,85 @@ import java.io.IOException;
 
 public class YamlFile {
 
-    public static final String FileBaseDirPath = "plugins/FreeForAll/";
+    public static final String FILEBASEDIRPATH = "plugins/FreeForAll/";
 
-    public static final String SettingsFilePath = FileBaseDirPath + "settings.yml";
-    public static final String LocationsFilePath = FileBaseDirPath + "locations.yml";
+    public static final String LOCATIONFILEPATH = FILEBASEDIRPATH + "location.yml";
+    public static final String SETTINGFILEPATH = FILEBASEDIRPATH + "setting.yml";
 
-    public static final YamlConfiguration SettingsYaml = new YamlConfiguration();
-    public static final YamlConfiguration LocationsYaml = new YamlConfiguration();
+    public static final YamlConfiguration LOCATIONYAML = new YamlConfiguration();
+    public static final YamlConfiguration SETTINGYAML = new YamlConfiguration();
 
-    public static void loadLocations() {
-        if (!(new File(FileBaseDirPath)).exists())
-            (new File(FileBaseDirPath)).mkdir();
-        if (!(new File(LocationsFilePath)).exists()) {
+    public static void loadLocation() {
+        File directory = new File(FILEBASEDIRPATH);
+        if (!directory.exists()) new File(FILEBASEDIRPATH).mkdir();
+
+        File file = new File(LOCATIONFILEPATH);
+        if (!file.exists()) {
             try {
-                (new File(LocationsFilePath)).createNewFile();
+                file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         try {
-            LocationsYaml.load((new File(LocationsFilePath)));
+            LOCATIONYAML.load(file);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
     }
 
-    public static void loadSettings() {
-        if (!(new File(FileBaseDirPath)).exists())
-            (new File(FileBaseDirPath)).mkdir();
-        if (!(new File(SettingsFilePath)).exists()) {
+    public static void loadSetting() {
+        File directory = new File(FILEBASEDIRPATH);
+        if (!directory.exists()) new File(FILEBASEDIRPATH).mkdir();
+
+        File file = new File(SETTINGFILEPATH);
+        if (!file.exists()) {
             try {
-                (new File(SettingsFilePath)).createNewFile();
+                file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         try {
-            SettingsYaml.load((new File(SettingsFilePath)));
+            SETTINGYAML.load(file);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
     }
 
-    public static void saveLocations() {
-        if (!(new File(FileBaseDirPath)).exists())
-            (new File(FileBaseDirPath)).mkdir();
-        if (!(new File(LocationsFilePath)).exists()) {
+    public static void saveLocation() {
+        File directory = new File(FILEBASEDIRPATH);
+        if (!directory.exists()) new File(FILEBASEDIRPATH).mkdir();
+
+        File file = new File(LOCATIONFILEPATH);
+        if (!file.exists()) {
             try {
-                (new File(LocationsFilePath)).createNewFile();
+                file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         try {
-            LocationsYaml.save(LocationsFilePath);
+            LOCATIONYAML.save(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void saveSettings() {
-        if (!(new File(FileBaseDirPath)).exists())
-            (new File(FileBaseDirPath)).mkdir();
-        if (!(new File(SettingsFilePath)).exists()) {
+    public static void saveSetting() {
+        File directory = new File(FILEBASEDIRPATH);
+        if (!directory.exists()) new File(FILEBASEDIRPATH).mkdir();
+
+        File file = new File(SETTINGFILEPATH);
+        if (!file.exists()) {
             try {
-                (new File(SettingsFilePath)).createNewFile();
+                file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         try {
-            SettingsYaml.save(SettingsFilePath);
+            SETTINGYAML.save(file);
         } catch (IOException e) {
             e.printStackTrace();
         }

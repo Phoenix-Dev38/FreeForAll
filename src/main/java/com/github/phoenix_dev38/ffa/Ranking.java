@@ -48,7 +48,7 @@ public class Ranking {
 
     public static void updateRanking() {
         int rank = 1;
-        World world = Bukkit.getWorld("PvP-Lobby");
+        World world = Bukkit.getWorld("lobby");
         Sign[] signs = new Sign[5];
         signs[0] = (Sign) new Location(world, -8, 10, -56).getBlock().getState();
         signs[1] = (Sign) new Location(world, -8, 9, -55).getBlock().getState();

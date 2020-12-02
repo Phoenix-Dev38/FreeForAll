@@ -33,38 +33,38 @@ public class GameUtil {
         float pitch = player.getLocation().getPitch();
         float yaw = player.getLocation().getYaw();
 
-        YamlConfiguration yml = YamlFile.LocationsYaml;
+        YamlConfiguration yml = YamlFile.LOCATIONYAML;
         ArrayList<String> list = new ArrayList<>();
         String loc = world + ", " + x + ", " + y + ", " + z + ", " + pitch + ", " + yaw;
         list.add(loc);
         list.addAll(yml.getStringList("PlayerSpawns-" + locType));
         yml.set("PlayerSpawns-" + locType, list);
         try {
-            yml.save(new File(YamlFile.LocationsFilePath));
+            yml.save(new File(YamlFile.LOCATIONFILEPATH));
             player.sendMessage(FreeForAll.PREFIX + "§aプレイヤーのスポーン地点を設定しました。");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        YamlFile.loadSettings();
-        YamlFile.SettingsYaml.set("Settings.world." + locType, world);
-        YamlFile.saveSettings();
+        YamlFile.loadSetting();
+        YamlFile.SETTINGYAML.set("Stage.world." + locType, world);
+        YamlFile.saveSetting();
     }
 
     public static boolean checkPlayerInTheFFA(Player player) {
-        YamlFile.loadSettings();
-        return player.getWorld().getName().equals(YamlFile.SettingsYaml.getString("Settings.world.Midium"));
+        YamlFile.loadSetting();
+        return player.getWorld().getName().equals(YamlFile.SETTINGYAML.getString("Stage.world.Midium"));
     }
 
     public static void teleportPlayerToFFA(Player player) {
-        List<String> list = YamlFile.LocationsYaml.getStringList("PlayerSpawns-Midium");
+        List<String> list = YamlFile.LOCATIONYAML.getStringList("PlayerSpawns-Midium");
         Collections.shuffle(list);
 
         String targetLoc = list.get(0);
 
-        String world = Bukkit.getWorld(targetLoc.split(",")[0]).getName();
-        double x = Double.parseDouble(targetLoc.split(",")[1]);
-        double y = Double.parseDouble(targetLoc.split(",")[2]);
-        double z = Double.parseDouble(targetLoc.split(",")[3]);
+        String world = Bukkit.getWorld(targetLoc.split(", ")[0]).getName();
+        double x = Double.parseDouble(targetLoc.split(", ")[1]);
+        double y = Double.parseDouble(targetLoc.split(", ")[2]);
+        double z = Double.parseDouble(targetLoc.split(", ")[3]);
         Location loc = new Location(Bukkit.getWorld(world), x, y, z);
 
         player.teleport(loc);

@@ -17,12 +17,12 @@ public class DatabaseUtil {
     public static boolean existPlayerStats(UUID uuid) throws SQLException {
         ResultSet resultSet;
         try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_stats WHERE uuid = '" + uuid + "';");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
             return resultSet.next();
         } catch (NullPointerException | SQLException e) {
             e.printStackTrace();
             FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_stats WHERE uuid = '" + uuid + "';");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
             return resultSet.next();
         }
     }
@@ -31,7 +31,7 @@ public class DatabaseUtil {
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
             try {
                 if (!existPlayerStats(uuid))
-                    FreeForAll.mysql.update("INSERT INTO ffa_stats(uuid, kills, deaths, coins) VALUES('" + uuid + "', '0', '0', '0');");
+                    FreeForAll.mysql.update("INSERT INTO ffa_player_stats(uuid, kills, deaths, coins) VALUES('" + uuid + "', '0', '0', '0');");
             } catch (SQLException throwable) {
                 throwable.printStackTrace();
             }
@@ -44,7 +44,7 @@ public class DatabaseUtil {
                 case KILLS:
                 case DEATHS:
                 case COINS:
-                    FreeForAll.mysql.update("UPDATE ffa_stats SET " + scoreType.toString().toLowerCase() + " = '" + score + "' WHERE uuid = '" + uuid + "';");
+                    FreeForAll.mysql.update("UPDATE ffa_player_stats SET " + scoreType.toString().toLowerCase() + " = '" + score + "' WHERE uuid = '" + uuid + "';");
                     break;
             }
         });
@@ -62,13 +62,13 @@ public class DatabaseUtil {
         List<UUID> uuid = new ArrayList<>();
         ResultSet resultSet;
         try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_stats;");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats;");
             while (resultSet.next())
                 uuid.add(UUID.fromString(resultSet.getString("uuid")));
         } catch (NullPointerException | SQLException e) {
             e.printStackTrace();
             FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_stats;");
+            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats;");
             while (true) {
                 try {
                     if (!resultSet.next()) break;
@@ -85,7 +85,7 @@ public class DatabaseUtil {
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
             ResultSet resultSet;
             try {
-                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_stats WHERE UUID = '" + uuid + "';");
+                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
                 switch (scoreType) {
                     case KILLS:
                     case DEATHS:
@@ -98,7 +98,7 @@ public class DatabaseUtil {
             } catch (NullPointerException | SQLException e) {
                 e.printStackTrace();
                 FreeForAll.connectMySQL();
-                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_stats WHERE UUID = '" + uuid + "';");
+                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
                 switch (scoreType) {
                     case KILLS:
                     case DEATHS:

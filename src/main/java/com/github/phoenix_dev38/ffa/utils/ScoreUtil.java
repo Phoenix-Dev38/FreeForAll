@@ -63,10 +63,8 @@ public class ScoreUtil {
     }
 
     public static void putScoreKills() {
-        for (UUID uuid : DatabaseUtil.getUUIDs()) {
-            System.out.println(uuid);
+        for (UUID uuid : DatabaseUtil.getUUIDs())
             FreeForAll.kills.put(uuid, DatabaseUtil.getScore(uuid, ScoreType.KILLS));
-        }
     }
 
     public static String calcKDRate(Player player) {
