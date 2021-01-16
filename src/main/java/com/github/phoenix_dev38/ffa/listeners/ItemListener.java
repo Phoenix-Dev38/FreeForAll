@@ -2,8 +2,8 @@ package com.github.phoenix_dev38.ffa.listeners;
 
 import com.github.phoenix_dev38.ffa.utils.GameUtil;
 import com.github.phoenix_dev38.ffa.FreeForAll;
-import com.github.phoenix_dev38.ffa.ext.sk.guis.SelectKitTypeGUI;
-import com.github.phoenix_dev38.piapi.API;
+import com.github.phoenix_dev38.ffa.exts.sk.guis.SelectKitTypeGUI;
+import com.github.phoenix_dev38.iapi.API;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

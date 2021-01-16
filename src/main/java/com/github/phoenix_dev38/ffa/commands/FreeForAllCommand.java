@@ -4,7 +4,7 @@ import com.github.phoenix_dev38.ffa.FreeForAll;
 import com.github.phoenix_dev38.ffa.Ranking;
 import com.github.phoenix_dev38.ffa.YamlFile;
 import com.github.phoenix_dev38.ffa.utils.GameUtil;
-import com.github.phoenix_dev38.piapi.API;
+import com.github.phoenix_dev38.iapi.API;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

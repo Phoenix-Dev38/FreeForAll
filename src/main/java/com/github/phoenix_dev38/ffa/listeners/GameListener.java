@@ -8,7 +8,7 @@ import com.github.phoenix_dev38.ffa.utils.DatabaseUtil;
 import com.github.phoenix_dev38.ffa.utils.GameUtil;
 import com.github.phoenix_dev38.ffa.utils.ScoreUtil;
 import com.github.phoenix_dev38.pa.ManagementUtil;
-import com.github.phoenix_dev38.piapi.API;
+import com.github.phoenix_dev38.iapi.API;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;

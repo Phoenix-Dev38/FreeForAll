@@ -3,11 +3,11 @@ package com.github.phoenix_dev38.ffa.utils;
 import com.github.phoenix_dev38.ffa.FreeForAll;
 import com.github.phoenix_dev38.ffa.GameScoreboard;
 import com.github.phoenix_dev38.ffa.YamlFile;
-import com.github.phoenix_dev38.ffa.ext.block.DatabaseUtil;
-import com.github.phoenix_dev38.ffa.ext.sk.NormalKit;
+import com.github.phoenix_dev38.ffa.exts.block.DatabaseUtil;
+import com.github.phoenix_dev38.ffa.exts.sk.NormalKit;
 import com.github.phoenix_dev38.gs.GlobalScoreboard;
 import com.github.phoenix_dev38.pa.ManagementUtil;
-import com.github.phoenix_dev38.piapi.API;
+import com.github.phoenix_dev38.iapi.API;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -98,8 +98,6 @@ public class GameUtil {
         player.setMaxHealth(40);
         player.setHealth(40);
         player.spigot().setCollidesWithEntities(true);
-
-        System.out.println(player);
 
         if (player.getInventory().contains(Material.BOOK))
             player.getInventory().remove(Material.BOOK);

@@ -46,10 +46,6 @@
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
         <repository>
-            <id>elmakers-repo</id>
-            <url>http://maven.elmakers.com/repository/</url>
-        </repository>
-        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
@@ -80,7 +76,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.phoenix-dev38</groupId>
-            <artifactId>PlayerItemAPI</artifactId>
+            <artifactId>ItemAPI</artifactId>
             <version>1.0.0</version>
         </dependency>
     </dependencies>
