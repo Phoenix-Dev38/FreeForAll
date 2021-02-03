@@ -4,8 +4,7 @@ import com.github.phoenix_dev38.ffa.FreeForAll;
 import com.github.phoenix_dev38.ffa.ScoreType;
 import org.bukkit.Bukkit;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,26 +13,31 @@ public class DatabaseUtil {
 
     static int i = 0;
 
-    public static boolean existPlayerStats(UUID uuid) throws SQLException {
+    public static boolean existPlayerStats(UUID uuid) {
         ResultSet resultSet;
-        try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
-            return resultSet.next();
-        } catch (NullPointerException | SQLException e) {
+        try (Connection connection = FreeForAll.getHikari().getConnection();
+             Statement statement = connection.createStatement()) {
+            resultSet = statement.executeQuery("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
+            return !resultSet.next();
+        } catch (SQLException e) {
             e.printStackTrace();
-            FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
-            return resultSet.next();
         }
+        return true;
     }
 
     public static void createPlayerStats(UUID uuid) {
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
-            try {
-                if (!existPlayerStats(uuid))
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_stats(uuid, kills, deaths, coins) VALUES('" + uuid + "', '0', '0', '0');");
-            } catch (SQLException throwable) {
-                throwable.printStackTrace();
+            if (existPlayerStats(uuid)) {
+                try (Connection connection = FreeForAll.getHikari().getConnection();
+                     PreparedStatement insert = connection.prepareStatement("INSERT INTO ffa_player_stats VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE uuid = ?;")) {
+                    insert.setObject(1, uuid);
+                    insert.setInt(2, 0);
+                    insert.setInt(3, 0);
+                    insert.setInt(4, 0);
+                    insert.execute();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -44,7 +48,14 @@ public class DatabaseUtil {
                 case KILLS:
                 case DEATHS:
                 case COINS:
-                    FreeForAll.mysql.update("UPDATE ffa_player_stats SET " + scoreType.toString().toLowerCase() + " = '" + score + "' WHERE uuid = '" + uuid + "';");
+                    try (Connection connection = FreeForAll.getHikari().getConnection();
+                         PreparedStatement update = connection.prepareStatement("UPDATE ffa_player_stats SET " + scoreType.name().toLowerCase() + " = '?' WHERE uuid = '?';")) {
+                        update.setObject(1, uuid);
+                        update.setInt(2, score);
+                        update.execute();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
         });
@@ -60,58 +71,34 @@ public class DatabaseUtil {
 
     public static List<UUID> getUUIDs() {
         List<UUID> uuid = new ArrayList<>();
-        ResultSet resultSet;
-        try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats;");
+        try (Connection connection = FreeForAll.getHikari().getConnection();
+             PreparedStatement select = connection.prepareStatement("SELECT * FROM ffa_player_stats")) {
+            ResultSet resultSet = select.executeQuery();
             while (resultSet.next())
                 uuid.add(UUID.fromString(resultSet.getString("uuid")));
-        } catch (NullPointerException | SQLException e) {
+            resultSet.close();
+        } catch (SQLException e) {
             e.printStackTrace();
-            FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats;");
-            while (true) {
-                try {
-                    if (!resultSet.next()) break;
-                    uuid.add(UUID.fromString(resultSet.getString("uuid")));
-                } catch (SQLException throwable) {
-                    throwable.printStackTrace();
-                }
-            }
         }
         return uuid;
     }
 
     public static int getScore(UUID uuid, ScoreType scoreType) {
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
-            ResultSet resultSet;
-            try {
-                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
+            try (Connection connection = FreeForAll.getHikari().getConnection();
+                 PreparedStatement select = connection.prepareStatement("SELECT * FROM ffa_player_stats WHERE uuid = '?';")) {
+                select.setObject(1, uuid);
                 switch (scoreType) {
                     case KILLS:
                     case DEATHS:
                     case COINS:
-                        String columnLabel = scoreType.toString().toLowerCase();
+                        ResultSet resultSet = select.executeQuery();
                         if (resultSet.next())
-                            i = resultSet.getInt(columnLabel);
+                            i = resultSet.getInt(scoreType.name().toLowerCase());
                         break;
                 }
-            } catch (NullPointerException | SQLException e) {
+            } catch (SQLException e) {
                 e.printStackTrace();
-                FreeForAll.connectMySQL();
-                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_stats WHERE uuid = '" + uuid + "';");
-                switch (scoreType) {
-                    case KILLS:
-                    case DEATHS:
-                    case COINS:
-                        String columnLabel = scoreType.toString().toLowerCase();
-                        try {
-                            if (resultSet.next())
-                                i = resultSet.getInt(columnLabel);
-                        } catch (SQLException throwable) {
-                            throwable.printStackTrace();
-                        }
-                        break;
-                }
             }
         });
         return i;

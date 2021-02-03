@@ -15,25 +15,19 @@ public class ScoreUtil {
     public static void putScore(UUID uuid, ScoreType scoreType) {
         switch (scoreType) {
             case KILLS:
-                if (!FreeForAll.kills.containsKey(uuid)) {
+                if (!FreeForAll.kills.containsKey(uuid))
                     FreeForAll.kills.put(uuid, DatabaseUtil.getScore(uuid, ScoreType.KILLS));
-                    return;
-                }
-                FreeForAll.kills.put(uuid, FreeForAll.kills.get(uuid) + 1);
+                else FreeForAll.kills.put(uuid, FreeForAll.kills.get(uuid) + 1);
                 break;
             case DEATHS:
-                if (!FreeForAll.deaths.containsKey(uuid)) {
+                if (!FreeForAll.deaths.containsKey(uuid))
                     FreeForAll.deaths.put(uuid, DatabaseUtil.getScore(uuid, ScoreType.DEATHS));
-                    return;
-                }
-                FreeForAll.deaths.put(uuid, FreeForAll.deaths.get(uuid) + 1);
+                else FreeForAll.deaths.put(uuid, FreeForAll.deaths.get(uuid) + 1);
                 break;
             case COINS:
-                if (!FreeForAll.coins.containsKey(uuid)) {
+                if (!FreeForAll.coins.containsKey(uuid))
                     FreeForAll.coins.put(uuid, DatabaseUtil.getScore(uuid, ScoreType.COINS));
-                    return;
-                }
-                FreeForAll.coins.put(uuid, FreeForAll.coins.get(uuid) + 10);
+                else FreeForAll.coins.put(uuid, FreeForAll.coins.get(uuid) + 10);
                 break;
         }
     }

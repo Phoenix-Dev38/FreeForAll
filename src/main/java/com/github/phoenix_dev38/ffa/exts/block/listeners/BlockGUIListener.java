@@ -34,23 +34,23 @@ public class BlockGUIListener implements Listener {
                 player.sendMessage(FreeForAll.PREFIX + "§e原木 ブロック§aに設定しました。");
                 break;
             case "§7ブロック: 鉄":
-                DatabaseUtil.setBlock(uuid, BlockType.IRON);
+                DatabaseUtil.setBlock(uuid, BlockType.IRON_BLOCK);
                 player.sendMessage(FreeForAll.PREFIX + "§7鉄 ブロック§aに設定しました。");
                 break;
             case "§6ブロック: 金":
-                DatabaseUtil.setBlock(uuid, BlockType.GOLD);
+                DatabaseUtil.setBlock(uuid, BlockType.GOLD_BLOCK);
                 player.sendMessage(FreeForAll.PREFIX + "§6金 ブロック§aに設定しました。");
                 break;
             case "§9ブロック: ラピス":
-                DatabaseUtil.setBlock(uuid, BlockType.LAPIS);
+                DatabaseUtil.setBlock(uuid, BlockType.LAPIS_BLOCK);
                 player.sendMessage(FreeForAll.PREFIX + "§9ラピス ブロック§aに設定しました。");
                 break;
             case "§bブロック: ダイヤモンド":
-                DatabaseUtil.setBlock(uuid, BlockType.DIAMOND);
+                DatabaseUtil.setBlock(uuid, BlockType.DIAMOND_BLOCK);
                 player.sendMessage(FreeForAll.PREFIX + "§bダイヤモンド ブロック§aに設定しました。");
                 break;
             case "§aブロック: エメラルド":
-                DatabaseUtil.setBlock(uuid, BlockType.EMERALD);
+                DatabaseUtil.setBlock(uuid, BlockType.EMERALD_BLOCK);
                 player.sendMessage(FreeForAll.PREFIX + "§aエメラルド ブロックに設定しました。");
                 break;
             case "§5ブロック: 黒曜石":

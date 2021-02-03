@@ -42,12 +42,12 @@ public class FreeForAllCommand implements CommandExecutor {
                         YamlFile.loadSetting();
                         player.sendMessage(FreeForAll.PREFIX + "§aFreeForAll内のファイルを再読み込みしました。");
                     } else if (args[0].equalsIgnoreCase("join")) {
-                        if (!FreeForAll.inGame.contains(uuid)) {
+                        if (!FreeForAll.inGame.contains(this.uuid)) {
                             FreeForAll.inGame.add(this.uuid);
                             player.sendMessage(FreeForAll.PREFIX + "§aFFAに参加しました。");
                         } else player.sendMessage(FreeForAll.PREFIX + "§cFFAには既に参加しています。");
                     } else if (args[0].equalsIgnoreCase("leave")) {
-                        if (FreeForAll.inGame.contains(uuid)) {
+                        if (FreeForAll.inGame.contains(this.uuid)) {
                             FreeForAll.inGame.remove(this.uuid);
                             player.sendMessage(FreeForAll.PREFIX + "§aFFAから抜けました。");
                         } else player.sendMessage(FreeForAll.PREFIX + "§cFFAには参加していません。");
@@ -81,6 +81,9 @@ public class FreeForAllCommand implements CommandExecutor {
                                 case "Midium":
                                 case "Large":
                                     GameUtil.setPlayerSpawns(player, locType);
+                                    break;
+                                default:
+                                    player.sendMessage(FreeForAll.PREFIX + "§cSmall, Midium, Largeのみを選択してください。");
                                     break;
                             }
                         }

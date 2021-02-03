@@ -6,8 +6,8 @@ import com.github.phoenix_dev38.ffa.YamlFile;
 import com.github.phoenix_dev38.ffa.exts.block.DatabaseUtil;
 import com.github.phoenix_dev38.ffa.exts.sk.NormalKit;
 import com.github.phoenix_dev38.gs.GlobalScoreboard;
-import com.github.phoenix_dev38.pa.ManagementUtil;
 import com.github.phoenix_dev38.iapi.API;
+import com.github.phoenix_dev38.pa.ManagementUtil;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -203,10 +203,10 @@ public class GameUtil {
     }
 
     public static void removeWaterAndGiveWaterBucket(Block block, Player player) {
-        Bukkit.getServer().getScheduler().runTaskLater(FreeForAll.getInstance(), () -> {
-            switch (block.getType()) {
-                case WATER:
-                case STATIONARY_WATER:
+        switch (block.getType()) {
+            case WATER:
+            case STATIONARY_WATER:
+                Bukkit.getServer().getScheduler().runTaskLater(FreeForAll.getInstance(), () -> {
                     block.setType(Material.AIR);
                     if (player.getGameMode().equals(GameMode.SURVIVAL) && checkPlayerInTheFFA(player)) {
                         if (!player.getInventory().contains(new ItemStack(Material.WATER_BUCKET))) {
@@ -214,8 +214,8 @@ public class GameUtil {
                             player.getInventory().addItem(new ItemStack(Material.WATER_BUCKET));
                         }
                     }
-            }
-        }, 60);
+                }, 60);
+        }
     }
 
     public static void giveHead(Player entity, Player killer) {

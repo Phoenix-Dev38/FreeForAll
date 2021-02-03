@@ -8,68 +8,38 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.UUID;
 
 public class DatabaseUtil {
 
-    public static boolean existPlayerInv(UUID uuid) throws SQLException {
+    public static boolean existPlayerInv(UUID uuid) {
         ResultSet resultSet;
-        try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "';");
-            return resultSet.next();
-        } catch (NullPointerException | SQLException e) {
+        try (Connection connection = FreeForAll.getHikari().getConnection();
+             Statement statement = connection.createStatement()) {
+            resultSet = statement.executeQuery("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "';");
+            return !resultSet.next();
+        } catch (SQLException e) {
             e.printStackTrace();
-            FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "';");
-            return resultSet.next();
         }
+        return true;
     }
 
-    public static void createPlayerInv(UUID uuid) {
-        Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
-            try {
-                if (!existPlayerInv(uuid)) {
-                    //キット追加したら忘れるな！
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'normal', '1', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'normal', '2', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'normal', '3', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'normal', '4', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '1', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '2', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '3', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '4', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '5', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '6', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '7', '?', '?');");
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_inv(uuid, kit_type, kit_num, inv, armor) VALUES('" + uuid + "', 'extraultimate', '8', '?', '?');");
-                }
-            } catch (SQLException throwable) {
-                throwable.printStackTrace();
-            }
-        });
-    }
-
-    public static boolean hasSavedPlayerInv(UUID uuid, KitType kitType, int kitNum) throws SQLException {
+    public static boolean hasSavedPlayerInv(UUID uuid, KitType kitType, int kitNum) {
         ResultSet resultSet;
-        try {
-            switch (kitType) {
-                case NORMAL:
-                case EXTRAULTIMATE:
-                    resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + kitType.name().toLowerCase() + "' AND kit_num = " + kitNum + ";");
-                    if (resultSet.getString("inv").equals("?"))
-                        return true;
-            }
-        } catch (NullPointerException | SQLException e) {
-            FreeForAll.connectMySQL();
-            switch (kitType) {
-                case NORMAL:
-                case EXTRAULTIMATE:
-                    resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + kitType.name().toLowerCase() + "' AND kit_num = " + kitNum + ";");
-                    if (resultSet.getString("inv").equals("?"))
-                        return true;
-            }
+        switch (kitType) {
+            case NORMAL:
+            case EXTRAULTIMATE:
+                try (Connection connection = FreeForAll.getHikari().getConnection();
+                     PreparedStatement select = connection.prepareStatement("SELECT * FROM ffa_player_inv WHERE uuid = '?';")) {
+                    select.setObject(1, uuid);
+                    select.setString(2, kitType.name().toLowerCase());
+                    select.setInt(3, kitNum);
+                    resultSet = select.executeQuery();
+                    return resultSet.next();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
         }
         return false;
     }
@@ -79,35 +49,42 @@ public class DatabaseUtil {
             switch (kitType) {
                 case NORMAL:
                 case EXTRAULTIMATE:
-                    FreeForAll.mysql.update("UPDATE ffa_player_inv SET inv = '" + inv + "', armor = '" + armor + "' WHERE uuid = '" + uuid + "' AND kit_type = '" + kitType.name().toLowerCase() + "' AND kit_num = " + kitNum + ";");
-                    break;
+                    try (Connection connection = FreeForAll.getHikari().getConnection();
+                         PreparedStatement insert = connection.prepareStatement("INSERT INTO ffa_player_inv VALUES(?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE uuid = '?';")) {
+                        insert.setObject(1, uuid);
+                        insert.setString(2, kitType.name().toLowerCase());
+                        insert.setInt(3, kitNum);
+                        insert.setString(4, inv);
+                        insert.setString(5, armor);
+                        insert.execute();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
             }
         });
     }
 
     private static String[] loadPlayerInv(UUID uuid, KitType kitType, int kitNum) throws SQLException {
-        ResultSet resultSet = null;
+        ResultSet resultSet;
+        String inv = "";
+        String armor = "";
         switch (kitType) {
             case NORMAL:
             case EXTRAULTIMATE:
-                String str = kitType.name().toLowerCase();
-                resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_inv WHERE uuid = '" + uuid + "' AND kit_type = '" + str + "' AND kit_num = " + kitNum + ";");
+                try (Connection connection = FreeForAll.getHikari().getConnection();
+                     PreparedStatement select = connection.prepareStatement("SELECT * FROM ffa_player_inv WHERE uuid = '?';")) {
+                    select.setObject(1, uuid);
+                    select.setString(2, kitType.name().toLowerCase());
+                    select.setInt(3, kitNum);
+                    resultSet = select.executeQuery();
+                    if (resultSet.next()) {
+                        inv = resultSet.getString("inv");
+                        armor = resultSet.getString("armor");
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
                 break;
-        }
-        String inv = "";
-        String armor = "";
-        while (true) {
-            try {
-                if (!resultSet.next()) break;
-                inv = resultSet.getString("inv");
-                armor = resultSet.getString("armor");
-            } catch (NullPointerException | SQLException e) {
-                e.printStackTrace();
-                FreeForAll.connectMySQL();
-                if (!resultSet.next()) break;
-                inv = resultSet.getString("inv");
-                armor = resultSet.getString("armor");
-            }
         }
         return new String[]{inv, armor};
     }
@@ -119,23 +96,16 @@ public class DatabaseUtil {
             String[] loadPlayerInv = new String[0];
             try {
                 loadPlayerInv = loadPlayerInv(uuid, kitType, kitNum);
-            } catch (SQLException throwable) {
-                throwable.printStackTrace();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
             ItemStack[] inv = new ItemStack[0];
             ItemStack[] armor = new ItemStack[1];
             try {
                 inv = ConverterUtil.itemStackArrayFromBase64(loadPlayerInv[0]);
                 armor = ConverterUtil.itemStackArrayFromBase64(loadPlayerInv[1]);
-            } catch (NullPointerException | IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-                FreeForAll.connectMySQL();
-                try {
-                    inv = ConverterUtil.itemStackArrayFromBase64(loadPlayerInv[0]);
-                    armor = ConverterUtil.itemStackArrayFromBase64(loadPlayerInv[1]);
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
             }
             player.getInventory().setContents(inv);
             player.getInventory().setArmorContents(armor);

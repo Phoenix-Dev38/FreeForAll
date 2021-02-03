@@ -7,8 +7,8 @@ import com.github.phoenix_dev38.ffa.ScoreType;
 import com.github.phoenix_dev38.ffa.utils.DatabaseUtil;
 import com.github.phoenix_dev38.ffa.utils.GameUtil;
 import com.github.phoenix_dev38.ffa.utils.ScoreUtil;
-import com.github.phoenix_dev38.pa.ManagementUtil;
 import com.github.phoenix_dev38.iapi.API;
+import com.github.phoenix_dev38.pa.ManagementUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -32,7 +32,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -44,9 +43,9 @@ public class GameListener implements Listener {
     List<String> list = new ArrayList<>();
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         this.uuid = event.getPlayer().getUniqueId();
-        if (!DatabaseUtil.existPlayerStats(this.uuid))
+        if (DatabaseUtil.existPlayerStats(this.uuid))
             DatabaseUtil.createPlayerStats(this.uuid);
     }
 
@@ -175,8 +174,8 @@ public class GameListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        /*if (!ManagementUtil.checkPlayerInTheMain(player))
-            return;*/
+        if (!ManagementUtil.checkPlayerInTheMainSpawn(player))
+            return;
         if (event.getFrom().getBlockX() != event.getTo().getBlockX() ||
                 event.getFrom().getBlockY() != event.getTo().getBlockY() ||
                 event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
@@ -331,7 +330,7 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player || event.getEntity() instanceof Zombie || event.getEntity() instanceof Horse))
+        if (!(event.getEntity() instanceof Player))
             return;
         if (!event.getCause().equals(DamageCause.FALL))
             return;

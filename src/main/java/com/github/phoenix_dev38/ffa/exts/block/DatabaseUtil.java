@@ -6,32 +6,34 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.UUID;
 
 public class DatabaseUtil {
 
-    public static boolean existPlayerBlock(UUID uuid) throws SQLException {
+    public static boolean existPlayerBlock(UUID uuid) {
         ResultSet resultSet;
-        try {
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_block WHERE UUID= '" + uuid + "';");
-            return resultSet.next();
-        } catch (NullPointerException | SQLException e) {
+        try (Connection connection = FreeForAll.getHikari().getConnection();
+             Statement statement = connection.createStatement()) {
+            resultSet = statement.executeQuery("SELECT * FROM ffa_player_block WHERE uuid = '" + uuid + "';");
+            return !resultSet.next();
+        } catch (SQLException e) {
             e.printStackTrace();
-            FreeForAll.connectMySQL();
-            resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_block WHERE UUID= '" + uuid + "';");
-            return resultSet.next();
         }
+        return true;
     }
 
     public static void createPlayerBlock(UUID uuid) {
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
-            try {
-                if (!existPlayerBlock(uuid))
-                    FreeForAll.mysql.update("INSERT INTO ffa_player_block(uuid, block) VALUES('" + uuid + "', '?');");
-            } catch (SQLException throwable) {
-                throwable.printStackTrace();
+            if (existPlayerBlock(uuid)) {
+                try (Connection connection = FreeForAll.getHikari().getConnection();
+                     PreparedStatement insert = connection.prepareStatement("INSERT INTO ffa_player_block VALUES(?, ?) ON DUPLICATE KEY UPDATE uuid = '?';")) {
+                    insert.setObject(1, uuid);
+                    insert.setString(2, "?");
+                    insert.execute();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -40,14 +42,21 @@ public class DatabaseUtil {
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
             switch (blockType) {
                 case LOG:
-                case IRON:
-                case GOLD:
-                case LAPIS:
-                case DIAMOND:
-                case EMERALD:
+                case IRON_BLOCK:
+                case GOLD_BLOCK:
+                case LAPIS_BLOCK:
+                case DIAMOND_BLOCK:
+                case EMERALD_BLOCK:
                 case OBSIDIAN:
                 default:
-                    FreeForAll.mysql.update("UPDATE ffa_player_block SET Block = '" + blockType.toString().toLowerCase() + "' WHERE uuid = '" + uuid + "';");
+                    try (Connection connection = FreeForAll.getHikari().getConnection();
+                         PreparedStatement update = connection.prepareStatement("UPDATE ffa_player_prestige SET " + blockType.name().toLowerCase() + " = '?' WHERE uuid = '?';")) {
+                        update.setObject(1, uuid);
+                        update.setString(2, blockType.name().toLowerCase());
+                        update.execute();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
         });
@@ -56,23 +65,18 @@ public class DatabaseUtil {
     public static void givePlayerBlock(Player player) {
         UUID uuid = player.getUniqueId();
         Bukkit.getScheduler().runTaskAsynchronously(FreeForAll.getInstance(), () -> {
-            ResultSet resultSet = FreeForAll.mysql.query("SELECT * FROM ffa_player_block WHERE uuid = '" + uuid + "';");
             String blockName = "?";
-            try {
-                resultSet.next();
-                blockName = resultSet.getString("block");
-            } catch (NullPointerException | SQLException e) {
-                e.printStackTrace();
-                FreeForAll.connectMySQL();
-                try {
-                    resultSet.next();
+            try (Connection connection = FreeForAll.getHikari().getConnection();
+                 PreparedStatement select = connection.prepareStatement("SELECT * FROM ffa_player_block WHERE uuid = '?';")) {
+                select.setObject(1, uuid);
+                ResultSet resultSet = select.executeQuery();
+                if (resultSet.next())
                     blockName = resultSet.getString("block");
-                } catch (SQLException throwable) {
-                    throwable.printStackTrace();
-                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
             if (blockName.equals("?")) player.getInventory().addItem(new ItemStack(Material.LOG, 64));
-            else player.getInventory().addItem(new ItemStack(Material.getMaterial(blockName), 64));
+            else player.getInventory().addItem(new ItemStack(Material.getMaterial(blockName.toUpperCase()), 64));
         });
     }
 }

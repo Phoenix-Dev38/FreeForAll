@@ -11,21 +11,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.sql.SQLException;
 import java.util.UUID;
 
 public class KitSaveListener implements Listener {
 
     UUID uuid;
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) throws SQLException {
-        this.uuid = event.getPlayer().getUniqueId();
-        if (!DatabaseUtil.existPlayerInv(this.uuid))
-            DatabaseUtil.createPlayerInv(this.uuid);
-    }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
@@ -52,7 +43,7 @@ public class KitSaveListener implements Listener {
             DatabaseUtil.savePlayerInv(this.uuid, KitType.NORMAL, 4, inv, armor);
         else if (API.itemCheck(player, "§cArtemis' Bow"))
             DatabaseUtil.savePlayerInv(this.uuid, KitType.EXTRAULTIMATE, 1, inv, armor);
-        else if (API.itemCheck(player, "§6Exodus"))
+        else if (API.checkHelmetWithItemMeta(player, "§6Exodus"))
             DatabaseUtil.savePlayerInv(this.uuid, KitType.EXTRAULTIMATE, 2, inv, armor);
         else if (API.itemCheck(player, "§6Axe of Perun"))
             DatabaseUtil.savePlayerInv(this.uuid, KitType.EXTRAULTIMATE, 3, inv, armor);

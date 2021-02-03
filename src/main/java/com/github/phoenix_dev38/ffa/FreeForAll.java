@@ -27,8 +27,10 @@ import com.github.phoenix_dev38.ffa.exts.sk.listeners.ItemListener;
 import com.github.phoenix_dev38.ffa.exts.sk.listeners.SelectKitGUIListener;
 import com.github.phoenix_dev38.ffa.listeners.GameListener;
 import com.github.phoenix_dev38.ffa.utils.ScoreUtil;
+import com.zaxxer.hikari.HikariDataSource;
+import de.yellowphoenix18.backupplus.utils.WorldUnloadThread;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -37,7 +39,7 @@ public class FreeForAll extends JavaPlugin {
 
     private static FreeForAll instance;
     public static ActionBar ab;
-    public static MySQL mysql;
+    private static HikariDataSource hikari;
 
     public static String PREFIX = "§a§l[FFA] §r";
 
@@ -51,11 +53,13 @@ public class FreeForAll extends JavaPlugin {
     public void onEnable() {
         instance = this;
         ab = new ActionBar();
+        hikari = new HikariDataSource();
 
         YamlFile.loadLocation();
         YamlFile.loadSetting();
         if (YamlFile.SETTINGYAML.getString("MySQL") == null) {
             YamlFile.SETTINGYAML.set("MySQL.host", "");
+            YamlFile.SETTINGYAML.set("MySQL.port", "");
             YamlFile.SETTINGYAML.set("MySQL.database", "");
             YamlFile.SETTINGYAML.set("MySQL.user", "");
             YamlFile.SETTINGYAML.set("MySQL.password", "");
@@ -64,18 +68,24 @@ public class FreeForAll extends JavaPlugin {
         YamlFile.saveLocation();
         YamlFile.saveSetting();
 
-        connectMySQL();
-
         setExecutor();
         registerEvents();
         registerRecipes();
+
+        HikariCP.connectHikariCP();
+
+        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+            World world = Bukkit.getWorld("ffa-stage");
+            WorldUnloadThread thr = new WorldUnloadThread(null, world.getName(), "rollback", "ffa-stage_0", world.getGenerator());
+            thr.start();
+        });
 
         ScoreUtil.putScoreKills();
         getServer().getScheduler().runTaskLater(this, Ranking::updateRanking, 100);
     }
 
     public void onDisable() {
-        MySQL.close();
+        HikariCP.close();
 
         YamlFile.saveLocation();
         YamlFile.saveSetting();
@@ -83,6 +93,10 @@ public class FreeForAll extends JavaPlugin {
 
     public static FreeForAll getInstance() {
         return instance;
+    }
+
+    public static HikariDataSource getHikari() {
+        return hikari;
     }
 
     private void setExecutor() {
@@ -127,20 +141,5 @@ public class FreeForAll extends JavaPlugin {
         Daredevil.daredevil();
         GoldenHead.goldenHead();
         LightApple.lightApple();
-    }
-
-    public static void connectMySQL() {
-        if (YamlFile.SETTINGYAML.getString("MySQL.host") == null
-                || YamlFile.SETTINGYAML.getString("MySQL.host").equalsIgnoreCase("")) {
-            Bukkit.getLogger().info(ChatColor.RED + "データベースの接続に失敗しました。ファイルの中身を確認して再設定してください。");
-            Bukkit.shutdown();
-            return;
-        }
-        mysql = new MySQL(YamlFile.SETTINGYAML.getString("MySQL.host"), YamlFile.SETTINGYAML.getString("MySQL.database"), YamlFile.SETTINGYAML.getString("MySQL.user"), YamlFile.SETTINGYAML.getString("MySQL.password"));
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_block(uuid varchar(64), block text)");
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_inv(uuid varchar(64), kit_type text, kit_num int, inv text, armor text)");
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_prestige(uuid varchar(64), goldenhead text, lightapple text)");
-        mysql.update("CREATE TABLE IF NOT EXISTS ffa_player_stats(uuid varchar(64), kills int, deaths int, coins int)");
-        Bukkit.getLogger().info(ChatColor.GREEN + "データベースの接続に成功しました。");
     }
 }

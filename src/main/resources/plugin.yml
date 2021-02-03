@@ -1,6 +1,7 @@
 name: FreeForAll
 version: ${project.version}
 main: com.github.phoenix_dev38.ffa.FreeForAll
+depend: [BackUpPlus]
 commands:
   freeforall:
     aliases: [ ffa ]
